@@ -1,0 +1,526 @@
+<!--
+  IELTS & PTE Fancy Landing Page
+  Single-file HTML/CSS/JS with interactive features:
+  - Responsive navbar
+  - Hero + CTA
+  - Course cards with enrollment modal
+  - Pricing tiers
+  - Booking / schedule modal (localStorage mock)
+  - Sample test widget (timer + interactive questions)
+  - Testimonials carousel
+  - FAQ accordion
+  - Contact form client-side validation (sends mailto as fallback)
+  - Sticky footer
+
+  To use: save as `index.html` and open in a browser. No backend required for demo features.
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IELTS & PTE Academy — Master English Tests</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Prepare for IELTS & PTE with expert tutors, mock tests, and flexible schedules. Interactive lessons and progress tracker." />
+
+  <style>
+    :root{
+      --accent:#6C5CE7;
+      --accent-2:#00b894;
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#98a0b3;
+      --glass: rgba(255,255,255,0.04);
+      color-scheme: dark;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071226 0%, #051223 100%); color:#e6eef8}
+    a{color:inherit;text-decoration:none}
+
+    /* Container */
+    .container{max-width:1100px;margin:0 auto;padding:28px}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:80;background:linear-gradient(180deg, rgba(7,18,38,0.7), rgba(7,18,38,0.35));backdrop-filter: blur(6px);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:46px;height:46px;border-radius:10px;display:inline-grid;place-items:center;background:linear-gradient(135deg,var(--accent),#4f46e5);font-weight:800;color:white}
+    .brand h1{margin:0;font-size:18px;font-weight:700}
+    nav ul{display:flex;gap:14px;align-items:center;margin:0;padding:0;list-style:none}
+    nav a{padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:500}
+    nav a:hover{color:white;background:rgba(255,255,255,0.02)}
+    .primary-btn{background:linear-gradient(90deg,var(--accent),#8b5cf6);padding:9px 14px;border-radius:10px;color:white;font-weight:700}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center;padding:48px 0}
+    .hero h2{font-family:'Poppins',sans-serif;font-size:36px;margin:0 0 10px}
+    .lead{color:var(--muted);line-height:1.5;margin-bottom:18px}
+    .hero .cards{display:flex;gap:10px}
+    .feature-pill{background:var(--glass);padding:8px 12px;border-radius:999px;color:#dbeafe;font-weight:600;font-size:13px}
+
+    /* Course cards */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .card h3{margin:0 0 6px}
+    .meta{color:var(--muted);font-size:13px}
+    .card .pill{display:inline-block;padding:6px 10px;background:rgba(255,255,255,0.02);border-radius:999px;font-weight:700;font-size:13px;margin-top:10px}
+
+    /* Pricing */
+    .pricing{display:flex;gap:12px}
+    .price{flex:1;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(100,120,255,0.06), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.03)}
+    .price h4{margin:0}
+    .price .cost{font-size:22px;font-weight:800}
+
+    /* Testimonials */
+    .testi{display:flex;gap:12px;align-items:center}
+    .avatar{width:56px;height:56px;border-radius:999px;background:linear-gradient(180deg,#2dd4bf,#06b6d4);display:grid;place-items:center;font-weight:800}
+
+    /* Footer */
+    footer{padding:30px 0;margin-top:40px;border-top:1px solid rgba(255,255,255,0.02);color:var(--muted)}
+
+    /* Responsive */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;}
+      .grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:640px){
+      nav ul{display:none}
+      .container{padding:16px}
+      .grid{grid-template-columns:1fr}
+    }
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;padding:18px}
+    .modal{background:#061225;padding:18px;border-radius:12px;max-width:720px;width:100%;border:1px solid rgba(255,255,255,0.04)}
+    .modal h3{margin-top:0}
+    .close-btn{background:transparent;border:0;color:var(--muted);font-weight:700}
+
+    /* Small utilities */
+    .muted{color:var(--muted)}
+    .gap{height:18px}
+    .cta-row{display:flex;gap:12px;align-items:center}
+    input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:inherit;width:100%}
+    button{cursor:pointer}
+
+    /* Testimonials carousel */
+    .carousel{position:relative;overflow:hidden}
+    .slides{display:flex;gap:12px;transition:transform 450ms cubic-bezier(.2,.9,.3,1)}
+
+    /* Sample test */
+    .testbox{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));padding:14px;border-radius:10px}
+    .question{margin-bottom:10px}
+    .choices{display:flex;flex-direction:column;gap:8px}
+    .choice{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+    .choice.selected{outline:2px solid rgba(108,92,231,0.6)}
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo">IP</div>
+        <div>
+          <h1>IELTS & PTE Academy</h1>
+          <div class="muted" style="font-size:12px">Online · Offline · Mock tests</div>
+        </div>
+      </div>
+
+      <nav>
+        <ul>
+          <li><a href="#courses">Courses</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#test">Try Test</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="cta-row">
+        <button class="primary-btn" id="bookTrial">Book Trial</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <div>
+        <div class="feature-pill">Expert tutors · Live classes · 1:1 feedback</div>
+        <h2>Beat IELTS & PTE with proven strategies and real mock tests</h2>
+        <p class="lead">Flexible schedules, band-targeted lessons, and timed mock tests. Join thousands who improved their band scores with our personalized coaching.</p>
+
+        <div style="display:flex;gap:12px;margin-top:18px;align-items:center">
+          <button class="primary-btn" id="getStarted">Get Started — Free Trial</button>
+          <button class="" id="watchDemo" style="padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Watch Demo</button>
+        </div>
+
+        <div class="gap"></div>
+
+        <div class="card">
+          <h3>Why choose us</h3>
+          <ul class="muted">
+            <li>Targeted lessons to reach Band 7+ (IELTS) and 79+ (PTE)</li>
+            <li>Full-length mock tests with scoring and feedback</li>
+            <li>Speaking labs with international examiners</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="card">
+          <h3>Quick Progress</h3>
+          <p class="muted">Track your improvement across listening, reading, writing, and speaking.</p>
+          <div style="margin-top:12px">
+            <div style="display:flex;gap:8px;align-items:center;"><strong>Listening</strong><div style="flex:1;height:10px;background:rgba(255,255,255,0.03);border-radius:999px;margin-left:8px"><div style="width:72%;height:10px;background:linear-gradient(90deg,var(--accent),#00d4ff);border-radius:999px"></div></div></div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><strong>Speaking</strong><div style="flex:1;height:10px;background:rgba(255,255,255,0.03);border-radius:999px;margin-left:8px"><div style="width:53%;height:10px;background:linear-gradient(90deg,var(--accent-2),#34d399);border-radius:999px"></div></div></div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button class="primary-btn" id="enrollNow">Enroll Now</button>
+            <button class="" onclick="document.getElementById('contact').scrollIntoView()" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Contact</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="courses">
+      <h2 style="margin-bottom:8px">Featured Courses</h2>
+      <p class="muted">Choose a course based on your target band and preferred study mode.</p>
+
+      <div class="grid" style="margin-top:14px">
+        <div class="card">
+          <h3>IELTS Intensive — 6 weeks</h3>
+          <div class="meta">Live classes · 12 sessions · Band-focused</div>
+          <p class="muted">Perfect for learners who need a fast band improvement with daily speaking labs.</p>
+          <div class="pill">Starts from $120</div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="primary-btn enroll" data-course="IELTS Intensive">Enroll</button>
+            <button onclick="openCourseDetails('IELTS Intensive')" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Details</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>PTE Mastery — 4 weeks</h3>
+          <div class="meta">Mock tests · Scoring strategy · 1:1 feedback</div>
+          <p class="muted">Focused lessons to push your PTE score to the next level quickly.</p>
+          <div class="pill">Starts from $140</div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="primary-btn enroll" data-course="PTE Mastery">Enroll</button>
+            <button onclick="openCourseDetails('PTE Mastery')" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Details</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Band Booster — 8 weeks</h3>
+          <div class="meta">Hybrid · Personalized plan</div>
+          <p class="muted">Longer-term plan with weekly instructor reports and mock exams.</p>
+          <div class="pill">Starts from $220</div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="primary-btn enroll" data-course="Band Booster">Enroll</button>
+            <button onclick="openCourseDetails('Band Booster')" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Details</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="gap"></div>
+
+    <section id="pricing">
+      <h2>Pricing Plans</h2>
+      <p class="muted">Simple, transparent pricing — pay per course or choose the membership.</p>
+
+      <div class="pricing" style="margin-top:12px">
+        <div class="price">
+          <h4>Monthly</h4>
+          <div class="cost">$59 <span class="muted">/ month</span></div>
+          <p class="muted">Unlimited access to lessons, 2 mock tests, speaking lab weekly.</p>
+          <div style="margin-top:12px"><button class="primary-btn">Subscribe</button></div>
+        </div>
+        <div class="price">
+          <h4>One-off course</h4>
+          <div class="cost">$120 <span class="muted">/ course</span></div>
+          <p class="muted">Includes recorded lessons and 1:1 feedback session.</p>
+          <div style="margin-top:12px"><button class="primary-btn">Buy Course</button></div>
+        </div>
+        <div class="price">
+          <h4>Premium</h4>
+          <div class="cost">$320 <span class="muted">/ 3 months</span></div>
+          <p class="muted">Full support, unlimited mocks, priority instructor support.</p>
+          <div style="margin-top:12px"><button class="primary-btn">Choose Premium</button></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="gap"></div>
+
+    <section id="test">
+      <h2>Try a Sample Listening Question</h2>
+      <p class="muted">A short mock to feel the test experience. Timer is 2 minutes.</p>
+
+      <div class="testbox" style="margin-top:12px;display:flex;gap:12px;align-items:flex-start">
+        <div style="flex:1">
+          <div id="timer" style="font-weight:800">02:00</div>
+          <div class="question" id="qtext">Question 1: Which statement best summarizes the speaker's main point?</div>
+          <div class="choices" id="choices">
+            <div class="choice" data-choice="A">A) They recommend saving money monthly.</div>
+            <div class="choice" data-choice="B">B) They describe a new teaching method used.</div>
+            <div class="choice" data-choice="C">C) They explain the benefits of learning online.</div>
+            <div class="choice" data-choice="D">D) They show how to cook a local dish.</div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="primary-btn" id="startTest">Start Test</button>
+            <button onclick="checkAnswer()" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Submit</button>
+          </div>
+        </div>
+        <div style="width:260px">
+          <div style="margin-bottom:8px">Audio (demo)</div>
+          <audio controls style="width:100%">
+            <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_3d6c6b0ef8.mp3?filename=calm-morning-110039.mp3" type="audio/mpeg">
+            Your browser does not support audio.
+          </audio>
+          <div style="margin-top:12px;color:var(--muted);font-size:13px">Tips: Read the question first, listen carefully for keywords, and eliminate wrong options.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="gap"></div>
+
+    <section id="testimonials">
+      <h2>What learners say</h2>
+      <div class="carousel" style="margin-top:12px">
+        <div class="slides" id="slides" style="width:300%">
+          <div class="card" style="min-width:320px">
+            <div class="testi">
+              <div class="avatar">A</div>
+              <div>
+                <strong>Anita, Nepal</strong>
+                <div class="muted" style="font-size:13px">Improved from 6.0 to 7.5 in 8 weeks!</div>
+              </div>
+            </div>
+            <p style="margin-top:8px">"The speaking labs were the most helpful — immediate feedback and real practice."</p>
+          </div>
+
+          <div class="card" style="min-width:320px">
+            <div class="testi">
+              <div class="avatar">B</div>
+              <div>
+                <strong>Mike, UK</strong>
+                <div class="muted" style="font-size:13px">Scored 90+ in PTE after the practice tests.</div>
+              </div>
+            </div>
+            <p style="margin-top:8px">"Excellent mock tests with clear scoring and improvement tips."</p>
+          </div>
+
+          <div class="card" style="min-width:320px">
+            <div class="testi">
+              <div class="avatar">S</div>
+              <div>
+                <strong>Sara, India</strong>
+                <div class="muted" style="font-size:13px">One-on-one sessions helped me a lot.</div>
+              </div>
+            </div>
+            <p style="margin-top:8px">"Personalized feedback and clear learning path — worth it."</p>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px"><button onclick="slide(-1)" class="primary-btn">Prev</button><button onclick="slide(1)" class="primary-btn">Next</button></div>
+    </section>
+
+    <div class="gap"></div>
+
+    <section id="faq">
+      <h2>Frequently Asked Questions</h2>
+      <div style="margin-top:12px">
+        <details style="margin-bottom:8px" open>
+          <summary style="font-weight:700">What band can I expect after the course?</summary>
+          <p class="muted">Results vary by learner; most regular students improve 0.5–1.5 bands with dedicated practice and mock feedback.</p>
+        </details>
+        <details style="margin-bottom:8px">
+          <summary style="font-weight:700">Do you provide certificates?</summary>
+          <p class="muted">We provide completion certificates and mock test reports. Official IELTS/PTE certificates are issued by the test bodies only.</p>
+        </details>
+        <details style="margin-bottom:8px">
+          <summary style="font-weight:700">Can I change my class schedule?</summary>
+          <p class="muted">Yes — flexible rescheduling is available based on instructor availability.</p>
+        </details>
+      </div>
+    </section>
+
+    <div class="gap"></div>
+
+    <section id="contact">
+      <h2>Contact & Trial Booking</h2>
+      <p class="muted">Fill below to book a free trial or ask questions.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:12px">
+        <form id="contactForm">
+          <div style="display:grid;gap:8px">
+            <label>Name <input id="name" required></label>
+            <label>Email <input id="email" type="email" required></label>
+            <label>Phone <input id="phone"></label>
+            <label>Message <textarea id="message" rows="4" required></textarea></label>
+            <div style="display:flex;gap:8px"><button class="primary-btn" type="submit">Send Message</button><button type="button" onclick="bookTrialFromContact()" style="padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)">Book Trial</button></div>
+          </div>
+        </form>
+
+        <div class="card">
+          <h4>Contact Info</h4>
+          <p class="muted">Email: hello@example.com<br/>Phone: +977 1 5555555<br/>Address: Kathmandu, Nepal</p>
+          <div style="margin-top:8px"><strong>Office Hours</strong><div class="muted">Mon–Sat • 09:00 — 18:00</div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="gap"></div>
+
+  </main>
+
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <strong>IELTS & PTE Academy</strong>
+        <div class="muted">© " + new Date().getFullYear() + " All rights reserved</div>
+      </div>
+      <div class="muted">Made with ♥ · Fast, secure & friendly</div>
+    </div>
+  </footer>
+
+  <!-- Modal markup -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="modalTitle">Enroll</h3>
+        <button class="close-btn" id="closeModal">✕</button>
+      </div>
+      <div id="modalContent" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <script>
+    // Small utilities
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    // Modal controls
+    const modalBackdrop = $('#modalBackdrop');
+    const modalTitle = $('#modalTitle');
+    const modalContent = $('#modalContent');
+    $('#closeModal').addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(); });
+
+    function openModal(title, html){
+      modalTitle.textContent = title;
+      modalContent.innerHTML = html;
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+    }
+    function closeModal(){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); }
+
+    // Enroll buttons
+    $$('.enroll').forEach(btn=> btn.addEventListener('click', (e)=>{
+      const course = e.currentTarget.dataset.course;
+      openModal('Enroll: ' + course, `\
+        <form id="enrollForm">\
+          <label>Your name<br><input id="enrollName" required></label><br>\
+          <label>Email<br><input id="enrollEmail" type="email" required></label><br>\
+          <label>Preferred batch<br><select id="enrollBatch">\
+            <option>Weekdays Morning</option>\
+            <option>Weekdays Evening</option>\
+            <option>Weekend Batch</option>\
+          </select></label><br>\
+          <div style="margin-top:10px;display:flex;gap:8px">\
+            <button class="primary-btn" type="submit">Confirm</button>\
+            <button type="button" onclick="closeModal()">Cancel</button>\
+          </div>\
+        </form>\
+      `);
+
+      setTimeout(()=>{ $('#enrollForm').addEventListener('submit', function(ev){ ev.preventDefault(); const name = $('#enrollName').value; const email = $('#enrollEmail').value; const batch = $('#enrollBatch').value; saveBooking({course, name, email, batch}); closeModal(); alert('Thanks ' + name + '! Your enrollment for '+course+' is recorded (demo).'); }); }, 50);
+    }));
+
+    // Save booking to localStorage (demo)
+    function saveBooking(obj){
+      const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+      bookings.push({...obj, time: new Date().toISOString()});
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+    }
+
+    // Book trial button
+    $('#bookTrial').addEventListener('click', ()=>{
+      openModal('Book a Free Trial', `\
+        <form id="trialForm">\
+          <label>Name<br><input id="trialName" required></label><br>\
+          <label>Email<br><input id="trialEmail" type="email" required></label><br>\
+          <label>Preferred Date<br><input id="trialDate" type="date"></label><br>\
+          <div style="margin-top:10px;display:flex;gap:8px"><button class="primary-btn" type="submit">Book</button><button type="button" onclick="closeModal()">Cancel</button></div>\
+        </form>\
+      `);
+      setTimeout(()=>{ $('#trialForm').addEventListener('submit', function(ev){ ev.preventDefault(); saveBooking({type:'trial', name:$('#trialName').value, email:$('#trialEmail').value, date:$('#trialDate').value}); alert('Trial booked — check your email for details (demo).'); closeModal(); }); },50);
+    });
+
+    // Enroll Now and Get Started actions
+    $('#enrollNow').addEventListener('click', ()=> document.querySelector('.enroll').click());
+    $('#getStarted').addEventListener('click', ()=> document.querySelector('.enroll').click());
+
+    // Course details modal
+    function openCourseDetails(name){
+      openModal(name + ' — Details', `<p class=\"muted\">Detailed curriculum for ${name} will be provided. Highlights:\n<ul><li>Diagnostic test</li><li>Weekly practice tests</li><li>One full mock test</li></ul></p><div style=\"margin-top:12px\"><button class=\"primary-btn\" onclick=\"document.querySelector('.enroll[data-course=\\\'${name}\\\']').click()\">Enroll</button></div>`);
+    }
+
+    // Contact form submission (client-side only)
+    $('#contactForm').addEventListener('submit', function(ev){ ev.preventDefault(); const name = $('#name').value; const email = $('#email').value; const msg = $('#message').value; // demo: try mailto fallback
+      const subject = encodeURIComponent('Contact from website: ' + name);
+      const body = encodeURIComponent('Name: '+name+'\nEmail: '+email+'\n\n'+msg);
+      window.location.href = `mailto:hello@example.com?subject=${subject}&body=${body}`;
+    });
+
+    function bookTrialFromContact(){ document.getElementById('bookTrial').click(); }
+
+    // Testimonials carousel
+    let slideIndex = 0;
+    function slide(dir){
+      const slides = document.getElementById('slides');
+      const cards = slides.children.length;
+      slideIndex = Math.max(0, Math.min(slideIndex + dir, cards-1));
+      slides.style.transform = `translateX(-${slideIndex * 340}px)`;
+    }
+
+    // Small sample-test logic (2 minutes)
+    let timerInterval = null;
+    function startTimer(seconds){
+      clearInterval(timerInterval);
+      let s = seconds;
+      const el = $('#timer');
+      timerInterval = setInterval(()=>{
+        s--; if(s<0){ clearInterval(timerInterval); el.textContent = '00:00'; alert('Time up!'); return; }
+        const mm = String(Math.floor(s/60)).padStart(2,'0');
+        const ss = String(s%60).padStart(2,'0');
+        el.textContent = mm + ':' + ss;
+      },1000);
+    }
+
+    $('#startTest').addEventListener('click', ()=>{ startTimer(120); });
+
+    // Choosing answer
+    $$('#choices .choice').forEach(c=> c.addEventListener('click', ()=>{ $$('#choices .choice').forEach(x=> x.classList.remove('selected')); c.classList.add('selected'); }));
+
+    function checkAnswer(){ const sel = $('.choice.selected'); if(!sel){ alert('Please select an answer'); return; } const ans = sel.dataset.choice; if(ans==='B'){ alert('Correct! (demo) — The speaker describes a new teaching method.'); } else { alert('Not quite — correct is B (demo).'); } }
+
+    // Simple analytics: record page view
+    (function(){ const pv = Number(localStorage.getItem('pv')||0)+1; localStorage.setItem('pv', pv); })();
+
+    // Footer year fixup
+    document.querySelector('footer .muted').textContent = `© ${new Date().getFullYear()} All rights reserved`;
+
+    // Accessibility small improvements
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+  </script>
+</body>
+</html>
